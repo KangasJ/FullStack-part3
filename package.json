@@ -6,7 +6,9 @@
   "scripts": {
     "start": "node index.js",
     "dev": "nodemon index.js",
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "build:ui":"@powershell Remove-Item -Recurse -Force dist && cd ../FullStack-kurssi/Osa2/puhelinluettelo2.16-17 && npm run build && @powershell Copy-Item build -Recurse ../../../../FullStack-part3/dist",
+    "deploy:full": "npm run build:ui && git add . && git commit -m uibuild && git push"
   },
   "author": "Jani Kangas",
   "license": "ISC",
