@@ -3,6 +3,22 @@ const app = express()
 var morgan = require('morgan')
 app.use(express.json())
 app.use(express.static('dist'))
+
+const mongoose = require('mongoose')
+
+const url =
+  `mongodb+srv://jka:${password}@cluster0.qahzj.mongodb.net/personsApp?retryWrites=true&w=majority&appName=Cluster0`
+
+mongoose.set('strictQuery', false)
+mongoose.connect(url)
+
+const personSchema = new mongoose.Schema({
+    name: String,
+    number: String
+})
+
+const Person = mongoose.model('Person', personSchema)
+
 let persons = [
     {
         id: "1",
@@ -70,30 +86,37 @@ const generateId = () => { //chatGPTn tarjoamana
     return String(newId) // Palauta ID merkkijonona
   }
 
-app.post('/api/persons', (request, response) => { // tehtävä 3.5 ja 3.6
-    const body = request.body
+app.get('/api/persons', (request, response) => {
+    Person.find({}).then(persons => {
+      response.json(persons)
+    })
+  })
 
-    if (!body.name || !body.number) {
-        return response.status(400).json({
-            error: 'name or number missing'
-        })
-    }
 
-    const personExists = persons.some(person => person.name === body.name)
-    if (personExists) {
-        return response.status(400).json({
-            error: 'name must be unique'
-        })
-    }
+// app.post('/api/persons', (request, response) => { // tehtävä 3.5 ja 3.6
+//     const body = request.body
 
-    const person = {
-        id: generateId(),
-        name: body.name,
-        number: body.number,
-    }
-    persons = persons.concat(person)
-    response.json(person)
-})
+//     if (!body.name || !body.number) {
+//         return response.status(400).json({
+//             error: 'name or number missing'
+//         })
+//     }
+
+//     const personExists = persons.some(person => person.name === body.name)
+//     if (personExists) {
+//         return response.status(400).json({
+//             error: 'name must be unique'
+//         })
+//     }
+
+//     const person = {
+//         id: generateId(),
+//         name: body.name,
+//         number: body.number,
+//     }
+//     persons = persons.concat(person)
+//     response.json(person)
+// })
 
 const PORT = process.env.PORT || 3001
 app.listen(PORT, () => {
