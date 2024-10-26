@@ -2,9 +2,10 @@ require('dotenv').config()
 const express = require('express')
 const app = express()
 var morgan = require('morgan')
+const Person = require('./models/person')
+
 app.use(express.json())
 app.use(express.static('dist'))
-const Person = require('./models/person')
 
 const url = process.env.MONGODB_URI;
 
@@ -100,26 +101,32 @@ const generateId = () => { //chatGPTn tarjoamana
     return String(newId) // Palauta ID merkkijonona
 }
 
-app.get('/api/persons', (request, response) => {
-    Person.find({}).then(persons => {
-      response.json(persons)
-    })
+const errorHandler = (error, request, response, next) => {
+  console.error(error.message)
+
+  if (error.name === 'CastError') {
+    return response.status(400).send({ error: 'malformatted id' })
+  }
+
+  next(error)
+}
+
+app.get('/api/persons', (request, response) => { //tehtävä 3.13
+    Person.find({})
+      .then(persons => response.json(persons))
+      .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => {
+app.post('/api/persons', (request, response) => { //tehtävä 3.14
   const body = request.body;
 
   if (!body.name || !body.number) {
-    return response.status(400).json({
-      error: 'name or number missing'
-    });
+    return response.status(400).json({error: 'name or number missing'});
   }
 
   Person.findOne({ name: body.name }).then(existingPerson => {
     if (existingPerson) {
-      return response.status(400).json({
-        error: 'name must be unique'
-      });
+      return response.status(400).json({error: 'name must be unique'});
     }
 
     const person = new Person({
@@ -127,19 +134,66 @@ app.post('/api/persons', (request, response) => {
       number: body.number
     });
 
-    person.save().then(savedPerson => {
-      response.json(savedPerson);
+    person.save()
+    .then(savedPerson => {response.json(savedPerson)
+    .catch(error => next(error))
     });
   });
 });
 
-app.get('/api/persons/:id', (request, response) => {
-    Person.findById(request.params.id).then(person => {
-      response.json(person)
+app.get('/api/persons/:id', (request, response) => { //tehtävä 3.18
+    Person.findById(request.params.id)
+    .then(person => {
+        if (person) {
+            response.json(person)
+        } else {
+            response.status(404).end()
+        }
     })
+    .catch(error => next(error))
 })
 
+app.delete('/api/persons/:id', (request, response, next) => { //tehtävä 3.15
+  Person.findByIdAndDelete(request.params.id)
+    .then(result => {
+      response.status(204).end()
+    })
+    .catch(error => next(error))
+})
 
+app.put('/api/persons/:id', (request, response, next) => { //tehtävä 3.17
+  const { name, number } = request.body
+
+  if (!name || !number) {
+    return response.status(400).json({ error: 'Name and number are required' });
+  }
+
+  const person = { name, number };
+
+  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+    .then(updatedPerson => {
+      if (updatedPerson) {
+        response.json(updatedPerson)
+      } else {
+        response.status(404).json({ error: 'Person not found' });
+      }
+    })
+    .catch(error => next(error))
+});
+
+app.get('/info', (request, response) => { //tehtävä 3.18
+  Person.countDocuments({})
+      .then(numberOfPersons => {
+          const currentTime = new Date();
+          response.send(
+              `<p>Phonebook has numbers for ${numberOfPersons} people</p>
+               <p>${currentTime}</p>`
+          );
+      })
+      .catch(error => next(error))
+});
+
+app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
