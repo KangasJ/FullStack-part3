@@ -7,7 +7,7 @@ const Person = require('./models/person')
 app.use(express.json())
 app.use(express.static('dist'))
 
-const url = process.env.MONGODB_URI;
+const url = process.env.MONGODB_URI
 
 // let persons = [
 //     {
@@ -44,7 +44,7 @@ app.use(morgan('tiny')) //tehtävä 3.7
 // app.get('/info', (request, response) => { //tehtävä 3.2
 //     const numberOfPersons = persons.length
 //     const currentTime = new Date()
-    
+
 //     response.send(
 //       `<p>Phonebook has numbers for ${numberOfPersons} people</p>
 //        <p>${currentTime}</p>`
@@ -93,12 +93,12 @@ app.use(morgan('tiny')) //tehtävä 3.7
 //     response.json(person)
 // })
 
-const generateId = () => { //chatGPTn tarjoamana 
-    let newId
-    do {
-      newId = Math.floor(Math.random() * 10000) // Generoi satunnainen numero
-    } while (persons.some(person => person.id === String(newId))) // Tarkista, ettei ID ole jo käytössä
-    return String(newId) // Palauta ID merkkijonona
+const generateId = () => { //chatGPTn tarjoamana
+  let newId
+  do {
+    newId = Math.floor(Math.random() * 10000) // Generoi satunnainen numero
+  } while (persons.some(person => person.id === String(newId))) // Tarkista, ettei ID ole jo käytössä
+  return String(newId) // Palauta ID merkkijonona
 }
 
 const errorHandler = (error, request, response, next) => {
@@ -114,43 +114,43 @@ const errorHandler = (error, request, response, next) => {
 }
 
 app.get('/api/persons', (request, response, next) => { //tehtävä 3.13
-    Person.find({})
-      .then(persons => response.json(persons))
-      .catch(error => next(error))
+  Person.find({})
+    .then(persons => response.json(persons))
+    .catch(error => next(error))
 })
 
 app.post('/api/persons', (request, response, next) => { //tehtävä 3.14
-  const body = request.body;
+  const body = request.body
 
   if (!body.name || !body.number) {
-    return response.status(400).json({error: 'name or number missing'});
+    return response.status(400).json({ error: 'name or number missing' })
   }
 
   Person.findOne({ name: body.name }).then(existingPerson => {
     if (existingPerson) {
-      return response.status(400).json({error: 'name must be unique'});
+      return response.status(400).json({ error: 'name must be unique' })
     }
 
     const person = new Person({
       name: body.name,
       number: body.number
-    });
+    })
 
     person.save()
       .then(savedPerson => {response.json(savedPerson)
-    })
-  .catch(error => next(error))
+      })
+      .catch(error => next(error))
   })
 })
 
 app.get('/api/persons/:id', (request, response, next) => { //tehtävä 3.18
-    Person.findById(request.params.id)
+  Person.findById(request.params.id)
     .then(person => {
-        if (person) {
-            response.json(person)
-        } else {
-            response.status(404).end()
-        }
+      if (person) {
+        response.json(person)
+      } else {
+        response.status(404).end()
+      }
     })
     .catch(error => next(error))
 })
@@ -167,10 +167,10 @@ app.put('/api/persons/:id', (request, response, next) => { //tehtävä 3.17
   const { name, number } = request.body
 
   if (!name || !number) {
-    return response.status(400).json({ error: 'Name and number are required' });
+    return response.status(400).json({ error: 'Name and number are required' })
   }
 
-  const person = { name, number };
+  const person = { name, number }
 
   Person.findByIdAndUpdate(
     request.params.id,
@@ -180,7 +180,7 @@ app.put('/api/persons/:id', (request, response, next) => { //tehtävä 3.17
       if (updatedPerson) {
         response.json(updatedPerson)
       } else {
-        response.status(404).json({ error: 'Person not found' });
+        response.status(404).json({ error: 'Person not found' })
       }
     })
     .catch(error => next(error))
@@ -188,19 +188,19 @@ app.put('/api/persons/:id', (request, response, next) => { //tehtävä 3.17
 
 app.get('/info', (request, response, next) => { //tehtävä 3.18
   Person.countDocuments({})
-      .then(numberOfPersons => {
-          const currentTime = new Date();
-          response.send(
-              `<p>Phonebook has numbers for ${numberOfPersons} people</p>
+    .then(numberOfPersons => {
+      const currentTime = new Date()
+      response.send(
+        `<p>Phonebook has numbers for ${numberOfPersons} people</p>
                <p>${currentTime}</p>`
-          )
-      })
-      .catch(error => next(error))
+      )
+    })
+    .catch(error => next(error))
 })
 
 app.use(errorHandler)
 
 const PORT = process.env.PORT
 app.listen(PORT, () => {
-    console.log(`Server running on port ${PORT}`)
+  console.log(`Server running on port ${PORT}`)
 })

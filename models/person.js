@@ -25,8 +25,8 @@ const personSchema = new mongoose.Schema({ //tehtävä 3.19
     required: true,
     validate: {
       validator: function(value) {
-        const phoneRegex = /^\d{2,3}-\d{5,}$/;
-        return phoneRegex.test(value);
+        const phoneRegex = /^\d{2,3}-\d{5,}$/
+        return phoneRegex.test(value)
       }
     }
   }
