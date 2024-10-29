@@ -106,18 +106,20 @@ const errorHandler = (error, request, response, next) => {
 
   if (error.name === 'CastError') {
     return response.status(400).send({ error: 'malformatted id' })
+  } else if (error.name === 'ValidationError') {
+    return response.status(400).json({ error: error.message })
   }
 
   next(error)
 }
 
-app.get('/api/persons', (request, response) => { //tehtävä 3.13
+app.get('/api/persons', (request, response, next) => { //tehtävä 3.13
     Person.find({})
       .then(persons => response.json(persons))
       .catch(error => next(error))
 })
 
-app.post('/api/persons', (request, response) => { //tehtävä 3.14
+app.post('/api/persons', (request, response, next) => { //tehtävä 3.14
   const body = request.body;
 
   if (!body.name || !body.number) {
@@ -135,13 +137,13 @@ app.post('/api/persons', (request, response) => { //tehtävä 3.14
     });
 
     person.save()
-    .then(savedPerson => {response.json(savedPerson)
-    .catch(error => next(error))
-    });
-  });
-});
+      .then(savedPerson => {response.json(savedPerson)
+    })
+  .catch(error => next(error))
+  })
+})
 
-app.get('/api/persons/:id', (request, response) => { //tehtävä 3.18
+app.get('/api/persons/:id', (request, response, next) => { //tehtävä 3.18
     Person.findById(request.params.id)
     .then(person => {
         if (person) {
@@ -170,7 +172,10 @@ app.put('/api/persons/:id', (request, response, next) => { //tehtävä 3.17
 
   const person = { name, number };
 
-  Person.findByIdAndUpdate(request.params.id, person, { new: true })
+  Person.findByIdAndUpdate(
+    request.params.id,
+    { name, number },
+    { new: true, runValidators: true, context: 'query' })
     .then(updatedPerson => {
       if (updatedPerson) {
         response.json(updatedPerson)
@@ -179,19 +184,19 @@ app.put('/api/persons/:id', (request, response, next) => { //tehtävä 3.17
       }
     })
     .catch(error => next(error))
-});
+})
 
-app.get('/info', (request, response) => { //tehtävä 3.18
+app.get('/info', (request, response, next) => { //tehtävä 3.18
   Person.countDocuments({})
       .then(numberOfPersons => {
           const currentTime = new Date();
           response.send(
               `<p>Phonebook has numbers for ${numberOfPersons} people</p>
                <p>${currentTime}</p>`
-          );
+          )
       })
       .catch(error => next(error))
-});
+})
 
 app.use(errorHandler)
 

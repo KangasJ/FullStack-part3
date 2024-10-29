@@ -13,9 +13,23 @@ mongoose.connect(url)
     console.log('error connecting to MongoDB:', error.message)
   })
 
-const personSchema = new mongoose.Schema({
-  name: String,
-  number: String,
+const personSchema = new mongoose.Schema({ //tehtävä 3.19
+  name: {
+    type: String,
+    minlength: 3,
+    required: true
+  },
+  number: { // tehtävä 3.20
+    type: String,
+    minlength: 8,
+    required: true,
+    validate: {
+      validator: function(value) {
+        const phoneRegex = /^\d{2,3}-\d{5,}$/;
+        return phoneRegex.test(value);
+      }
+    }
+  }
 })
 
 personSchema.set('toJSON', {
