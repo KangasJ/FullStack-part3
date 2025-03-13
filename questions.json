@@ -1,0 +1,22 @@
+[
+    {
+        "question": "Is Javascript fun?",
+        "options": ["Yes, I love it", "NO"],
+        "correctAnswer": "Yes, I love it"
+    },
+    {
+        "question": "Is Javascript easy?",
+        "options": ["Yes", "No", "Somewhat", "Painful"],
+        "correctAnswer": "Painful"
+    },
+    {
+        "question": "Which following car brand is the best?",
+        "options": ["Mercedes Benz", "BMW", "Ferrari", "FIAT", "Lada"],
+        "correctAnswer": "Lada"
+    },
+    {
+        "question": "Do you like your job?",
+        "options": ["No","Yes","I love it!"],
+        "correctAnswer": "No"
+    }   
+]
